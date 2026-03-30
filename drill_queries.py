@@ -1,14 +1,15 @@
 import sqlite3
 
+
 def top_departments(db_path):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
     query = """
-    SELECT d.name, SUM(e.salary) AS total_salary
+    SELECT d.name AS dept_name, SUM(e.salary) AS total_salary
     FROM employees e
     JOIN departments d ON e.dept_id = d.dept_id
-    GROUP BY d.name
+    GROUP BY d.dept_id, d.name
     ORDER BY total_salary DESC
     LIMIT 3;
     """
@@ -17,44 +18,44 @@ def top_departments(db_path):
     result = cursor.fetchall()
 
     conn.close()
-    return result 
+    return result
 
-if __name__ == "__main__":
-    print(top_departments("drill.db")) 
+
 def employees_with_projects(db_path):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
     query = """
-    SELECT e.name, p.name
+    SELECT e.name AS employee_name, p.name AS project_name
     FROM employees e
-    JOIN project_assignments pa ON e.emp_id = pa.emp_id
-    JOIN projects p ON pa.project_id = p.project_id;
+    INNER JOIN project_assignments pa ON e.emp_id = pa.emp_id
+    INNER JOIN projects p ON pa.project_id = p.project_id
+    ORDER BY e.name, p.name;
     """
 
     cursor.execute(query)
     result = cursor.fetchall()
 
     conn.close()
-    return result 
-if __name__ == "__main__":
-    print(employees_with_projects("drill.db")) 
+    return result
+
+
 def salary_rank_by_department(db_path):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
     query = """
-    SELECT e.name, d.name, e.salary,
+    SELECT e.name AS employee_name,
+           d.name AS dept_name,
+           e.salary,
            RANK() OVER (PARTITION BY e.dept_id ORDER BY e.salary DESC) AS rank
     FROM employees e
     JOIN departments d ON e.dept_id = d.dept_id
-    ORDER BY d.name, rank;
+    ORDER BY d.name, rank, e.name;
     """
 
     cursor.execute(query)
     result = cursor.fetchall()
 
     conn.close()
-    return result 
-if __name__ == "__main__":
-    print(salary_rank_by_department("drill.db"))       
+    return result
