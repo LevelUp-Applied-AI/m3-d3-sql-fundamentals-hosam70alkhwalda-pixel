@@ -1,5 +1,5 @@
 import sqlite3
-
+import drill_queries
 
 def top_departments(db_path):
     conn = sqlite3.connect(db_path)
